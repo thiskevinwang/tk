@@ -1,0 +1,65 @@
+# This is an example .goreleaser.yml file with some sane defaults.
+# Make sure to check the documentation at https://goreleaser.com
+before:
+  hooks:
+    - go mod download
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+    # you may remove this if you don't need go generate
+    - go generate ./...
+builds:
+  - env:
+      - CGO_ENABLED=0
+      - GO111MODULE=on
+      - GOPROXY=https://goproxy.io  
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+    ignore:
+      - goos: darwin
+        goarch: 386
+      - goos: linux
+        goarch: arm
+        goarm: 7
+      - goarm: mips64
+        gomips: hardfloat
+
+# Check https://goreleaser.com/customization/archive/
+archives:
+  - name_template: "homebrew-go-example_{{ .Version }}_{{ .Os }}_{{ .Arch }}"  
+    replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      386: i386
+      amd64: x86_64
+
+# 
+project_name: cdk-go
+
+# Check https://goreleaser.com/customization/homebrew/
+brews:
+  - homepage: 'https://github.com/thiskevinwang/cdk-go'
+    description: 'Example binary distribution using homebrew.'
+    folder: Formula
+    commit_author:
+      name: kevinwang
+      email: kwangsan@gmail.com
+    tap:
+      owner: kevinwang
+      name: cdk-go
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
