@@ -21,9 +21,9 @@ var (
 
 	// rootCmd represents the base command when called without any subcommand
 	rootCmd = &cobra.Command{
-		Use:   "cdk-go",
-		Short: `cdk-go is a toolkit for various daily tasks`,
-		Long:  `cdk-go is a toolkit for various daily tasks`,
+		Use:   "tk",
+		Short: `tk is a toolkit for various daily tasks`,
+		Long:  `tk is a toolkit for various daily tasks`,
 		PreRun: func(rootCmd *cobra.Command, args []string) {
 
 		},
