@@ -37,11 +37,11 @@ archives:
       amd64: x86_64
 
 # 
-project_name: cdk-go
+project_name: tk
 
 # Check https://goreleaser.com/customization/homebrew/
 brews:
-  - homepage: 'https://github.com/thiskevinwang/cdk-go'
+  - homepage: 'https://github.com/thiskevinwang/tk'
     description: 'Example binary distribution using homebrew.'
     folder: Formula
     commit_author:
@@ -49,7 +49,7 @@ brews:
       email: kwangsan@gmail.com
     tap:
       owner: kevinwang
-      name: cdk-go
+      name: tk
 
 checksum:
   name_template: 'checksums.txt'
