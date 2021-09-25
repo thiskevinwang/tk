@@ -48,7 +48,7 @@ brews:
       name: kevinwang
       email: kwangsan@gmail.com
     tap:
-      owner: kevinwang
+      owner: thiskevinwang
       name: tk
 
 checksum:
