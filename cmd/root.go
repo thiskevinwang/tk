@@ -53,19 +53,6 @@ func init() {
 }
 
 func initConfig() {
-	var logLevel = viper.GetString("log-level")
-
-	switch logLevel {
-	case "debug":
-		log.SetLevel(log.DebugLevel)
-	case "warn":
-		log.SetLevel(log.WarnLevel)
-	case "error":
-		log.SetLevel(log.ErrorLevel)
-	default:
-		log.SetLevel(log.InfoLevel)
-	}
-
 	home, err := homedir.Dir()
 	if err != nil {
 		log.Fatal(aurora.Red(err))
@@ -86,28 +73,38 @@ func initConfig() {
 	viper.SetConfigName("config")
 	viper.SetConfigType("yaml")
 	viper.AddConfigPath(configDir)
-
 	viper.AutomaticEnv()
 
-	// this writes `{}` to /Users/<user>/.tk/config.yaml
 	if err = viper.SafeWriteConfig(); err != nil {
-		log.Error("SafeWriteConfig: ", err.Error())
+		// Config File "/Users/<user>/.tk/config.yaml" Already Exists
 	}
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			// Config file not found; ignore error if desired
-			// Should create on
-			log.Warn(fmt.Sprintf("Config file not found"))
-
-			if err = viper.WriteConfig(); err != nil {
-				log.Error("WriteConfig: ", err.Error())
-			}
-
 		} else {
 			// Config file was found but another error was produced
-			log.Warn(aurora.Yellow("Config file was found but another error was produced"))
 		}
+	}
+
+	var logLevel = viper.GetString("loglevel")
+
+	switch logLevel {
+	case "panic":
+		log.SetLevel(log.PanicLevel) // 0
+	case "fatal":
+		log.SetLevel(log.FatalLevel) // 1
+	case "error":
+		log.SetLevel(log.ErrorLevel) // 2
+	case "warn", "warning":
+		log.SetLevel(log.WarnLevel) // 3
+	case "info":
+		log.SetLevel(log.InfoLevel) // 4
+	case "debug":
+		log.SetLevel(log.DebugLevel) // 5
+	default:
+		log.SetLevel(log.FatalLevel)
+		viper.Set("loglevel", log.FatalLevel.String())
 	}
 
 	if repos := viper.GetStringSlice("repos"); repos == nil {
@@ -115,6 +112,5 @@ func initConfig() {
 		viper.WriteConfig()
 	}
 
-	log.Info("ConfigFileUsed: ", aurora.Blue(viper.ConfigFileUsed()))
-
+	log.Info(fmt.Sprintf("%v %v", aurora.Gray(12, "Config loaded:"), aurora.Blue(viper.ConfigFileUsed())))
 }
