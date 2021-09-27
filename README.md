@@ -8,3 +8,21 @@
   <img alt="latest tag" src="https://img.shields.io/github/v/tag/thiskevinwang/tk"/>
   <img alt="go version" src="https://img.shields.io/github/go-mod/go-version/thiskevinwang/tk"/>
 </p>
+
+## Installation
+
+### Homebrew
+
+```sh
+brew tap thiskevinwang/tk https://github.com/thiskevinwang/tk
+brew install tk
+tk
+```
+
+## Usage
+
+### Launch AWS console in your browser
+
+```
+tk aws
+```
