@@ -7,9 +7,9 @@
   <a href="https://github.com/thiskevinwang/tk/releases">
     <img alt="latest release" src="https://img.shields.io/github/v/release/thiskevinwang/tk"/>
   </a>
-  <a href="https://github.com/thiskevinwang/tk/tags">
+  <!-- <a href="https://github.com/thiskevinwang/tk/tags">
     <img alt="latest tag" src="https://img.shields.io/github/v/tag/thiskevinwang/tk"/>
-  </a>
+  </a> -->
   <img alt="go version" src="https://img.shields.io/github/go-mod/go-version/thiskevinwang/tk"/>
 </p>
 
@@ -25,8 +25,21 @@ tk
 
 ## Usage
 
-### Launch AWS console in your browser
+### `tk aws [federated-identity-name]`
 
-```
-tk aws
+Launch AWS console in your browser
+
+### `tk repo`
+
+Select a Github repository to open in your browser
+
+## Configuration
+
+`tk` will create a yaml configuration file at `<homedir>/.tk/config.yaml`.
+
+```bash
+cat ~/.tk/config.yaml
+
+# loglevel: warn
+# repos: []
 ```
