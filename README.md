@@ -1,5 +1,5 @@
 <p align="center">
-  <h1 align="center">🧰</h1>
+  <img alt="toolkit logo" src="https://emojipedia-us.s3.dualstack.us-west-1.amazonaws.com/thumbs/320/twitter/282/toolbox_1f9f0.png" height="96" />
   <h3 align="center">Toolkit</h3>
   <p align="center">Repetitive. Chores. Automated.</p>
 </p>
