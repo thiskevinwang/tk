@@ -11,7 +11,8 @@ builds:
   - env:
       - CGO_ENABLED=0
       - GO111MODULE=on
-      - GOPROXY=https://goproxy.io  
+      - GOPROXY=https://goproxy.io
+      - GITHUB_TOKEN={{ .Env.GITHUB_TOKEN }}
     goos:
       - linux
       - darwin
