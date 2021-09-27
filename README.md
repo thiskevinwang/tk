@@ -13,6 +13,15 @@
   <img alt="go version" src="https://img.shields.io/github/go-mod/go-version/thiskevinwang/tk"/>
 </p>
 
+## What is Toolkit?
+
+Toolkit is a CLI tool for myself to avoid doing some repetitive and tedious daily chores. These include, but are not limited to:
+
+- Logging into the AWS Dashboard
+- Selecting from a handful of Github repos to open in the browser
+
+... more tasks to come!
+
 ## Installation
 
 ### Homebrew
