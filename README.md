@@ -4,8 +4,12 @@
   <p align="center">Repetitive. Chores. Automated.</p>
 </p>
 <p align="center">
-  <img alt="latest release" src="https://img.shields.io/github/v/release/thiskevinwang/tk"/>
-  <img alt="latest tag" src="https://img.shields.io/github/v/tag/thiskevinwang/tk"/>
+  <a href="https://github.com/thiskevinwang/tk/releases">
+    <img alt="latest release" src="https://img.shields.io/github/v/release/thiskevinwang/tk"/>
+  </a>
+  <a href="https://github.com/thiskevinwang/tk/tags">
+    <img alt="latest tag" src="https://img.shields.io/github/v/tag/thiskevinwang/tk"/>
+  </a>
   <img alt="go version" src="https://img.shields.io/github/go-mod/go-version/thiskevinwang/tk"/>
 </p>
 
