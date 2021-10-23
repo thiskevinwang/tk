@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"os"
 	"path"
-	"sort"
+	"path/filepath"
 	"strings"
 
 	"github.com/logrusorgru/aurora"
-	"github.com/manifoldco/promptui"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
@@ -24,71 +23,11 @@ const (
 	CORNER = "└──"
 )
 
-type Node struct {
-	Level    int
-	Children []*Node
-	Parent   *Node
-	Name     string
-	Path     string
-	IsLast   bool
-}
-
-func genNodes(root *Node, filename string, level int, filepath string) []*Node {
-	children := []*Node{}
-
-	files, err := os.ReadDir(filepath)
-	if err != nil {
-		return children
-	}
-
-	// sort by [..folder, ...file]
-	sort.Slice(files, func(i, j int) bool {
-		iIsDir := files[i].IsDir()
-		jIsDir := files[j].IsDir()
-		if !iIsDir && jIsDir {
-			return false
-		} else {
-			return true
-		}
-	})
-
-	for idx, f := range files {
-		isLast := idx == len(files)-1
-
-		child := &Node{
-			Level:  level + 1,
-			Parent: root,
-			Name:   f.Name(),
-			Path:   path.Join(filepath, f.Name()),
-			IsLast: isLast,
-		}
-		child.Children = genNodes(child, f.Name(), level+1, path.Join(filepath, f.Name()))
-
-		children = append(children, child)
-	}
-
-	return children
-}
-
 var treeCmd = &cobra.Command{
 	Use:   `tree`,
 	Short: `List contents of directories in a tree-like format`,
 	Long:  `List contents of directories in a tree-like format`,
 	Run: func(treeCmd *cobra.Command, args []string) {
-		prompt := promptui.Select{
-			Label: "Select Traversal Strategy",
-			Items: []string{"Breadth First", "Depth First"},
-		}
-
-		_, result, err := prompt.Run()
-
-		if err != nil {
-			fmt.Println(aurora.Red(err.Error()), " Exiting...")
-			return
-		}
-
-		fmt.Println(aurora.Green(result))
-
 		cwd, err := os.Getwd()
 		if err != nil {
 			log.Fatal(err)
@@ -98,82 +37,92 @@ var treeCmd = &cobra.Command{
 		dir := cwd
 		// Or use path via 1st argument
 		if len(args) >= 1 {
-			dir = args[0]
+			dir = path.Join(dir, args[0])
 		}
 
-		// Generate in-memory tree
-		root := &Node{
-			Name:     dir,
-			Level:    0,
-			Path:     dir,
-			Parent:   nil,
-			Children: nil,
-			IsLast:   true,
-		}
-		root.Children = genNodes(root, dir, 0, dir)
-
-		switch result {
-		case "Breadth First":
-			bfs(root)
-		case "Depth First":
-			dfs(root, true)
-		}
+		fmt.Println(aurora.Blue(dir))
+		dfs(dir, dir)
 	},
 }
 
-// Not really search, just traversal
-func bfs(root *Node) {
-	// Instantiate queue
-	queue := []*Node{}
-	// Enqueue root node
-	queue = append(queue, root)
+// GIVEN a path like '/Users/kevin/repos/tk'
+//
+// RETURN true|false, if the path is the last entry amongst its siblings
+func getIsLast(path string) bool {
+	dir := filepath.Dir(path)   // Users/kevin/repos
+	base := filepath.Base(path) // tk
 
-	// While the queue isn't empty
-	for len(queue) > 0 {
-		// Dequeue first element
-		el := queue[0]
-		queue = queue[1:]
-		// Enqueue its children
-		queue = append(queue, el.Children...)
-
-		fmt.Println(strings.Repeat(STEM, el.Level)+fmt.Sprintf("[%v]", el.Level)+">>", aurora.Blue(el.Name))
-
+	// TODO handle errors
+	files, _ := os.ReadDir(dir)
+	isLast := false
+	for i, file := range files {
+		if base == file.Name() {
+			isLast = i == len(files)-1
+			break
+		}
 	}
+
+	return isLast
 }
 
-// Also not search, just traversal
-func dfs(root *Node, isLast bool) {
-	// The symbol, preceding the filename
+// GIVEN a path like "/Users/kevin/repos/tk/cmd/version.go"
+//
+// RETURN a string like `│   │       │       └── `
+//
+// Traverses a path upwards, and checks if each subsequent entry
+// is the last amongst its siblings and draws a stem/space accordingly.
+func drawBranch(path string, root string) string {
+	if !filepath.HasPrefix(path, root) {
+		log.Fatal("Invariant Violation: ", aurora.Underline(path), " does not extend ", aurora.Underline(root))
+	}
+	dir := filepath.Dir(path)
+
 	tip := BRANCH
-	if isLast {
+	if getIsLast(path) {
 		tip = CORNER
 	}
+	symbols := []string{tip}
 
-	symbols := []string{}
-	ptr := root
-
-	// Traverse backwards to draw all preceding branches
-	for ptr.Parent != nil {
-		// Draw leftwards
-		if ptr.Parent.IsLast {
-			// If a parent is the last node out of its siblings,
-			// draw empty space
+	// draw leftwards until we reach the root directory
+	for dir != root {
+		if getIsLast(dir) {
 			symbols = append([]string{SPACE}, symbols...)
 		} else {
-			// else draw a stem
 			symbols = append([]string{STEM}, symbols...)
 		}
-
-		ptr = ptr.Parent
+		dir = filepath.Dir(dir)
 	}
 
-	branch := strings.Join(symbols, "") + tip
-	name := aurora.Yellow(root.Name)
+	return strings.Join(symbols, "")
+}
 
-	fmt.Println(branch, name)
+// Traverse a given directory tree and print a tree-like output
+//
+// - dir is the path to each node
+//
+// - root is path to the root dir which dfs was first called on
+func dfs(dir string, root string) {
+	files, err := os.ReadDir(dir)
+	if err != nil {
+		return
+	}
 
-	for i, next := range root.Children {
-		isLast := i == len(root.Children)-1
-		dfs(next, isLast)
+	for _, f := range files {
+		filePath := path.Join(dir, f.Name())
+
+		// TODO make ignore-cases configurable
+		switch name := f.Name(); {
+		case
+			strings.HasPrefix(name, "."),           // dot files
+			strings.Contains(name, "node_modules"): // node modules
+			continue
+		}
+
+		branch := aurora.Gray(12, drawBranch(filePath, root))
+		fmt.Println(branch, f.Name())
+
+		if f.IsDir() {
+			dfs(filePath, root)
+		}
 	}
 }

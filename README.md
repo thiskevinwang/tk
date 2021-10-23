@@ -42,6 +42,10 @@ Launch AWS console in your browser
 
 Select a Github repository to open in your browser
 
+### `tk tree [path]`
+
+List contents of directories in a tree-like format. Currently ignores `.` files and `node_modules`
+
 ## Configuration
 
 `tk` will create a yaml configuration file at `<homedir>/.tk/config.yaml`.
