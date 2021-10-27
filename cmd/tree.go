@@ -41,7 +41,8 @@ var treeCmd = &cobra.Command{
 		}
 
 		fmt.Println(aurora.Blue(dir))
-		dfs(dir, dir)
+		fileCt, folderCt := dfs(dir, dir)
+		fmt.Println("Files:", fileCt, "Folders:", folderCt)
 	},
 }
 
@@ -101,28 +102,67 @@ func drawBranch(path string, root string) string {
 // - dir is the path to each node
 //
 // - root is path to the root dir which dfs was first called on
-func dfs(dir string, root string) {
+func dfs(dir string, root string) (int, int) {
+	fileCt := 0
+	folderCt := 0
+
 	files, err := os.ReadDir(dir)
 	if err != nil {
-		return
+		log.Fatal(err)
 	}
 
 	for _, f := range files {
 		filePath := path.Join(dir, f.Name())
 
 		// TODO make ignore-cases configurable
-		switch name := f.Name(); {
-		case
-			strings.HasPrefix(name, "."),           // dot files
-			strings.Contains(name, "node_modules"): // node modules
-			continue
-		}
+		// switch name := f.Name(); {
+		// case
+		// 	strings.HasPrefix(name, "."),           // dot files
+		// 	strings.Contains(name, "node_modules"): // node modules
+		// 	continue
+		// }
 
 		branch := aurora.Gray(12, drawBranch(filePath, root))
 		fmt.Println(branch, f.Name())
 
 		if f.IsDir() {
-			dfs(filePath, root)
+			folderCt += 1
+			_fileCt, _folderCt := dfs(filePath, root)
+			fileCt += _fileCt
+			folderCt += _folderCt
+		} else {
+			fileCt += 1
 		}
 	}
+
+	return fileCt, folderCt
+}
+
+// This func has the same output as `dfs` but relies on
+// filepath.Walkdir.
+// This func is only used in benchmark tests.
+func dfs_walk(dir string, root string) {
+	fileCt := 0
+	folderCt := 0
+
+	filepath.WalkDir(dir, func(_path string, d os.DirEntry, err error) error {
+		if _path == root {
+			return err
+		}
+
+		if d.IsDir() {
+			folderCt += 1
+		} else {
+			fileCt += 1
+		}
+
+		filePath := _path
+
+		branch := aurora.Gray(12, drawBranch(filePath, root))
+		fmt.Println(branch, d.Name())
+		return err
+	})
+
+	fmt.Println("Files: ", fileCt, "Folders: ", folderCt)
+	return
 }

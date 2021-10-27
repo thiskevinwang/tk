@@ -44,7 +44,7 @@ Select a Github repository to open in your browser
 
 ### `tk tree [path]`
 
-List contents of directories in a tree-like format. Currently ignores `.` files and `node_modules`
+List contents of directories in a tree-like format.
 
 ## Configuration
 
@@ -56,3 +56,7 @@ cat ~/.tk/config.yaml
 # loglevel: warn
 # repos: []
 ```
+
+## Benchmark
+
+`go test ./cmd -bench=.`
