@@ -5,6 +5,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/logrusorgru/aurora"
 	log "github.com/sirupsen/logrus"
@@ -17,8 +18,8 @@ func init() {
 
 const (
 	SPACE  = "    "
-	STEM   = "│   "
-	BRANCH = "├──"
+	BRANCH = "│   "
+	STEM   = "├──"
 	CORNER = "└──"
 )
 
@@ -78,7 +79,7 @@ func drawTip(path string) string {
 	if getIsLast(path) {
 		return CORNER
 	} else {
-		return BRANCH
+		return STEM
 	}
 }
 
@@ -110,7 +111,7 @@ func drawBranch(path string, root string) string {
 	// starting from the file's directory,
 	// draw leftwards until we reach the root directory
 	dir := filepath.Dir(path)
-	// try to reach from the cache
+	// try to read from the cache
 	if branchCache[dir] != "" {
 		branch = branchCache[dir]
 	} else {
@@ -119,7 +120,7 @@ func drawBranch(path string, root string) string {
 			if getIsLast(dir) {
 				branch = SPACE + branch
 			} else {
-				branch = STEM + branch
+				branch = BRANCH + branch
 			}
 			dir = filepath.Dir(dir)
 		}
@@ -150,12 +151,12 @@ func dfs(dir string, root string) (int, int) {
 		filePath := path.Join(dir, f.Name())
 
 		// TODO make ignore-cases configurable
-		// switch name := f.Name(); {
-		// case
-		// 	strings.HasPrefix(name, "."),           // dot files
-		// 	strings.Contains(name, "node_modules"): // node modules
-		// 	continue
-		// }
+		switch name := f.Name(); {
+		case
+			name == ".git",                         // dot files
+			strings.Contains(name, "node_modules"): // node modules
+			continue
+		}
 
 		branch := aurora.Gray(12, drawBranch(filePath, root))
 		fmt.Println(branch, f.Name())
