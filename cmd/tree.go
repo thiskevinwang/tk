@@ -103,29 +103,28 @@ func drawBranch(path string, root string) string {
 		log.Fatal("Invariant Violation: ", aurora.Underline(path), " does not extend ", aurora.Underline(root))
 	}
 
-	// `branch` will be shared between files in the same directory
-	// so this calculation can be cached
+	// `branch` will be repeatedly calculated by files sharing the
+	// same parent directory, so this calculation should be cached
 	branch := ""
-
+	originalDirPath := filepath.Dir(path)
 	// starting from the file's directory,
 	// draw leftwards until we reach the root directory
 	dir := filepath.Dir(path)
+	// try to reach from the cache
 	if branchCache[dir] != "" {
 		branch = branchCache[dir]
 	} else {
+		// loop until we reach the root directory
 		for dir != root {
 			if getIsLast(dir) {
 				branch = SPACE + branch
 			} else {
 				branch = STEM + branch
 			}
-			// cache
-			branchCache[dir] = branch
-			// move up one level
 			dir = filepath.Dir(dir)
 		}
-		// cache
-		branchCache[dir] = branch
+		// cache result of the original dir, before mutations
+		branchCache[originalDirPath] = branch
 	}
 
 	tip := drawTip(path)
