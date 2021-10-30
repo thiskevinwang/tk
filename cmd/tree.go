@@ -5,7 +5,6 @@ import (
 	"os"
 	"path"
 	"path/filepath"
-	"strings"
 
 	"github.com/logrusorgru/aurora"
 	log "github.com/sirupsen/logrus"
@@ -46,10 +45,16 @@ var treeCmd = &cobra.Command{
 	},
 }
 
+var isLastCache = map[string]bool{}
+
 // GIVEN a path like '/Users/kevin/repos/tk'
 //
 // RETURN true|false, if the path is the last entry amongst its siblings
 func getIsLast(path string) bool {
+	if x := isLastCache[path]; x {
+		return x
+	}
+
 	dir := filepath.Dir(path)   // Users/kevin/repos
 	base := filepath.Base(path) // tk
 
@@ -63,8 +68,21 @@ func getIsLast(path string) bool {
 		}
 	}
 
+	// cache the result
+	isLastCache[path] = isLast
 	return isLast
 }
+
+// path will be globally unique so memoizing is not necessary
+func drawTip(path string) string {
+	if getIsLast(path) {
+		return CORNER
+	} else {
+		return BRANCH
+	}
+}
+
+var branchCache = map[string]string{}
 
 // GIVEN a path like "/Users/kevin/repos/tk/cmd/version.go"
 //
@@ -73,28 +91,46 @@ func getIsLast(path string) bool {
 // Traverses a path upwards, and checks if each subsequent entry
 // is the last amongst its siblings and draws a stem/space accordingly.
 func drawBranch(path string, root string) string {
+	// `path` will be globally unique
+	//
+	// memoizing the result is not necessarily useful, assuming each
+	// function invocation is isolated
+	//
+	// caching the result does improve benchmark runs, but it is not
+	// an accurate improvement in practice
+
 	if !filepath.HasPrefix(path, root) {
 		log.Fatal("Invariant Violation: ", aurora.Underline(path), " does not extend ", aurora.Underline(root))
 	}
-	dir := filepath.Dir(path)
 
-	tip := BRANCH
-	if getIsLast(path) {
-		tip = CORNER
-	}
-	symbols := []string{tip}
+	// `branch` will be shared between files in the same directory
+	// so this calculation can be cached
+	branch := ""
 
+	// starting from the file's directory,
 	// draw leftwards until we reach the root directory
-	for dir != root {
-		if getIsLast(dir) {
-			symbols = append([]string{SPACE}, symbols...)
-		} else {
-			symbols = append([]string{STEM}, symbols...)
+	dir := filepath.Dir(path)
+	if branchCache[dir] != "" {
+		branch = branchCache[dir]
+	} else {
+		for dir != root {
+			if getIsLast(dir) {
+				branch = SPACE + branch
+			} else {
+				branch = STEM + branch
+			}
+			// cache
+			branchCache[dir] = branch
+			// move up one level
+			dir = filepath.Dir(dir)
 		}
-		dir = filepath.Dir(dir)
+		// cache
+		branchCache[dir] = branch
 	}
 
-	return strings.Join(symbols, "")
+	tip := drawTip(path)
+
+	return branch + tip
 }
 
 // Traverse a given directory tree and print a tree-like output
