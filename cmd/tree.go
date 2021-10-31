@@ -18,8 +18,8 @@ func init() {
 
 const (
 	SPACE  = "    "
-	STEM   = "│   "
-	BRANCH = "├──"
+	BRANCH = "│   "
+	STEM   = "├──"
 	CORNER = "└──"
 )
 
@@ -41,14 +41,25 @@ var treeCmd = &cobra.Command{
 		}
 
 		fmt.Println(aurora.Blue(dir))
-		dfs(dir, dir)
+
+		fileCt, folderCt := dfs(dir, dir)
+
+		fmt.Println("Files:", fileCt, "Folders:", folderCt)
+		// dfs_walk(dir, dir)
+
 	},
 }
+
+var isLastCache = map[string]bool{}
 
 // GIVEN a path like '/Users/kevin/repos/tk'
 //
 // RETURN true|false, if the path is the last entry amongst its siblings
 func getIsLast(path string) bool {
+	if x := isLastCache[path]; x {
+		return x
+	}
+
 	dir := filepath.Dir(path)   // Users/kevin/repos
 	base := filepath.Base(path) // tk
 
@@ -62,8 +73,21 @@ func getIsLast(path string) bool {
 		}
 	}
 
+	// cache the result
+	isLastCache[path] = isLast
 	return isLast
 }
+
+// path will be globally unique so memoizing is not necessary
+func drawTip(path string) string {
+	if getIsLast(path) {
+		return CORNER
+	} else {
+		return STEM
+	}
+}
+
+var branchCache = map[string]string{}
 
 // GIVEN a path like "/Users/kevin/repos/tk/cmd/version.go"
 //
@@ -71,29 +95,45 @@ func getIsLast(path string) bool {
 //
 // Traverses a path upwards, and checks if each subsequent entry
 // is the last amongst its siblings and draws a stem/space accordingly.
-func drawBranch(path string, root string) string {
+func drawRest(path string, root string) string {
+	// `path` will be globally unique
+	//
+	// memoizing the result is not necessarily useful, assuming each
+	// function invocation is isolated
+	//
+	// caching the result does improve benchmark runs, but it is not
+	// an accurate improvement in practice
+
 	if !filepath.HasPrefix(path, root) {
 		log.Fatal("Invariant Violation: ", aurora.Underline(path), " does not extend ", aurora.Underline(root))
 	}
-	dir := filepath.Dir(path)
 
-	tip := BRANCH
-	if getIsLast(path) {
-		tip = CORNER
-	}
-	symbols := []string{tip}
+	// `branch` will be repeatedly calculated by files sharing the
+	// same parent directory, so this calculation should be cached
+	branch := ""
 
+	// starting from the file's directory,
 	// draw leftwards until we reach the root directory
-	for dir != root {
-		if getIsLast(dir) {
-			symbols = append([]string{SPACE}, symbols...)
-		} else {
-			symbols = append([]string{STEM}, symbols...)
+	dir := filepath.Dir(path)
+	// try to read from the cache
+	if branchCache[dir] != "" {
+		branch = branchCache[dir]
+	} else {
+		// loop until we reach the root directory
+		for dir != root {
+			if getIsLast(dir) {
+				branch = SPACE + branch
+			} else {
+				branch = BRANCH + branch
+			}
+			dir = filepath.Dir(dir)
 		}
-		dir = filepath.Dir(dir)
+		// cache result of the original dir, before mutations
+		originalDirPath := filepath.Dir(path)
+		branchCache[originalDirPath] = branch
 	}
 
-	return strings.Join(symbols, "")
+	return branch + drawTip(path)
 }
 
 // Traverse a given directory tree and print a tree-like output
@@ -101,10 +141,13 @@ func drawBranch(path string, root string) string {
 // - dir is the path to each node
 //
 // - root is path to the root dir which dfs was first called on
-func dfs(dir string, root string) {
+func dfs(dir string, root string) (int, int) {
+	fileCt := 0
+	folderCt := 0
+
 	files, err := os.ReadDir(dir)
 	if err != nil {
-		return
+		log.Fatal(err)
 	}
 
 	for _, f := range files {
@@ -113,16 +156,56 @@ func dfs(dir string, root string) {
 		// TODO make ignore-cases configurable
 		switch name := f.Name(); {
 		case
-			strings.HasPrefix(name, "."),           // dot files
+			strings.Contains(name, ".git"),         // dot files
 			strings.Contains(name, "node_modules"): // node modules
 			continue
 		}
 
-		branch := aurora.Gray(12, drawBranch(filePath, root))
+		branch := aurora.Gray(12, drawRest(filePath, root))
 		fmt.Println(branch, f.Name())
 
 		if f.IsDir() {
-			dfs(filePath, root)
+			folderCt += 1
+			_fileCt, _folderCt := dfs(filePath, root)
+			fileCt += _fileCt
+			folderCt += _folderCt
+		} else {
+			fileCt += 1
 		}
 	}
+
+	return fileCt, folderCt
+}
+
+// This func has the same output as `dfs` but relies on
+// filepath.Walkdir.
+// This func is only used in benchmark tests.
+func dfs_walk(dir string, root string) {
+	fileCt := 0
+	folderCt := 0
+
+	filepath.WalkDir(dir, func(_path string, d os.DirEntry, err error) error {
+		switch p := _path; {
+		case
+			p == root,                           // avoid infinite loop on root
+			strings.Contains(p, ".git"),         // dot files
+			strings.Contains(p, "node_modules"): // node modules
+			return err
+		}
+
+		if d.IsDir() {
+			folderCt += 1
+		} else {
+			fileCt += 1
+		}
+
+		filePath := _path
+
+		branch := aurora.Gray(12, drawRest(filePath, root))
+		fmt.Println(branch, d.Name())
+		return err
+	})
+
+	fmt.Println("Files: ", fileCt, "Folders: ", folderCt)
+	return
 }
