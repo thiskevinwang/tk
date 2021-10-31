@@ -41,8 +41,12 @@ var treeCmd = &cobra.Command{
 		}
 
 		fmt.Println(aurora.Blue(dir))
+
 		fileCt, folderCt := dfs(dir, dir)
+
 		fmt.Println("Files:", fileCt, "Folders:", folderCt)
+		// dfs_walk(dir, dir)
+
 	},
 }
 
@@ -91,7 +95,7 @@ var branchCache = map[string]string{}
 //
 // Traverses a path upwards, and checks if each subsequent entry
 // is the last amongst its siblings and draws a stem/space accordingly.
-func drawBranch(path string, root string) string {
+func drawRest(path string, root string) string {
 	// `path` will be globally unique
 	//
 	// memoizing the result is not necessarily useful, assuming each
@@ -107,7 +111,7 @@ func drawBranch(path string, root string) string {
 	// `branch` will be repeatedly calculated by files sharing the
 	// same parent directory, so this calculation should be cached
 	branch := ""
-	originalDirPath := filepath.Dir(path)
+
 	// starting from the file's directory,
 	// draw leftwards until we reach the root directory
 	dir := filepath.Dir(path)
@@ -125,12 +129,11 @@ func drawBranch(path string, root string) string {
 			dir = filepath.Dir(dir)
 		}
 		// cache result of the original dir, before mutations
+		originalDirPath := filepath.Dir(path)
 		branchCache[originalDirPath] = branch
 	}
 
-	tip := drawTip(path)
-
-	return branch + tip
+	return branch + drawTip(path)
 }
 
 // Traverse a given directory tree and print a tree-like output
@@ -153,12 +156,12 @@ func dfs(dir string, root string) (int, int) {
 		// TODO make ignore-cases configurable
 		switch name := f.Name(); {
 		case
-			name == ".git",                         // dot files
+			strings.Contains(name, ".git"),         // dot files
 			strings.Contains(name, "node_modules"): // node modules
 			continue
 		}
 
-		branch := aurora.Gray(12, drawBranch(filePath, root))
+		branch := aurora.Gray(12, drawRest(filePath, root))
 		fmt.Println(branch, f.Name())
 
 		if f.IsDir() {
@@ -182,7 +185,11 @@ func dfs_walk(dir string, root string) {
 	folderCt := 0
 
 	filepath.WalkDir(dir, func(_path string, d os.DirEntry, err error) error {
-		if _path == root {
+		switch p := _path; {
+		case
+			p == root,                           // avoid infinite loop on root
+			strings.Contains(p, ".git"),         // dot files
+			strings.Contains(p, "node_modules"): // node modules
 			return err
 		}
 
@@ -194,7 +201,7 @@ func dfs_walk(dir string, root string) {
 
 		filePath := _path
 
-		branch := aurora.Gray(12, drawBranch(filePath, root))
+		branch := aurora.Gray(12, drawRest(filePath, root))
 		fmt.Println(branch, d.Name())
 		return err
 	})
