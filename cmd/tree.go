@@ -78,7 +78,7 @@ func dfs(dir string, root string, cache map[string]string) (int, int) {
 
 	for _, f := range files {
 		filePath := path.Join(dir, f.Name())
-		// // TODO make ignore-cases configurable
+		// TODO make ignore-cases configurable
 		switch name := f.Name(); {
 		case
 			strings.Contains(name, ".git"),         // dot files
@@ -86,13 +86,14 @@ func dfs(dir string, root string, cache map[string]string) (int, int) {
 			continue
 		}
 
-		relativePath := strings.Split(filePath, root)
-		parts := strings.Split(relativePath[1], string(os.PathSeparator))
+		relativePath := strings.TrimPrefix(filePath, root)
+		relativePath = strings.Trim(relativePath, string(os.PathSeparator))
+		parts := strings.Split(relativePath, string(os.PathSeparator))
 
 		res := ""
 		abs := root
 
-		for i, part := range parts[1:] {
+		for i, part := range parts {
 			abs = path.Join(abs, part)
 
 			if cache[abs] != "" {
@@ -100,7 +101,7 @@ func dfs(dir string, root string, cache map[string]string) (int, int) {
 			} else {
 				isLast := getIsLast(abs)
 
-				if i == len(parts[1:])-1 {
+				if i == len(parts)-1 {
 					if isLast {
 						res += CORNER
 					} else {
@@ -155,15 +156,16 @@ func dfs_walk(dir string, root string) (int, int) {
 		}
 		res := ""
 
-		relativePath := strings.Split(_path, root)
-		parts := strings.Split(relativePath[1], string(os.PathSeparator))
+		relativePath := strings.TrimPrefix(_path, root)
+		relativePath = strings.Trim(relativePath, string(os.PathSeparator))
+		parts := strings.Split(relativePath, string(os.PathSeparator))
 
 		abs := root
-		for i, part := range parts[1:] {
+		for i, part := range parts {
 			abs = path.Join(abs, part)
 			isLast := getIsLast(abs)
 
-			if i == len(parts[1:])-1 {
+			if i == len(parts)-1 {
 				if isLast {
 					res += CORNER
 				} else {
