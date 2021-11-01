@@ -5,20 +5,20 @@
 class Tk < Formula
   desc "Example binary distribution using homebrew."
   homepage "https://github.com/thiskevinwang/tk"
-  version "0.0.8"
+  version "0.0.9"
   bottle :unneeded
 
   on_macos do
     if Hardware::CPU.intel?
-      url "https://github.com/thiskevinwang/tk/releases/download/v0.0.8/homebrew-go-example_0.0.8_Darwin_x86_64.tar.gz"
-      sha256 "fcd9953dd959f1318c8e1e60eebd7e5c38411282291892b8f9d3d37a77452eae"
+      url "https://github.com/thiskevinwang/tk/releases/download/v0.0.9/homebrew-go-example_0.0.9_Darwin_x86_64.tar.gz"
+      sha256 "b131d8c64389de8074ec310bc527ae1ff597de8d6f472b873ec03680227bfdeb"
     end
   end
 
   on_linux do
     if Hardware::CPU.intel?
-      url "https://github.com/thiskevinwang/tk/releases/download/v0.0.8/homebrew-go-example_0.0.8_Linux_x86_64.tar.gz"
-      sha256 "ef884a005cd276c8214b005485e11b434d654c383559364162a7e66b99acf739"
+      url "https://github.com/thiskevinwang/tk/releases/download/v0.0.9/homebrew-go-example_0.0.9_Linux_x86_64.tar.gz"
+      sha256 "821b644fa0eb5f7db83c5ebea6cd8e64c912c01757a166d730b1fe27c4572ff6"
     end
   end
 
