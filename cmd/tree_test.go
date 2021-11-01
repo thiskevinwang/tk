@@ -9,22 +9,32 @@ import (
 // Run benchmarks with:
 // go test ./cmd -bench=.
 
-func BenchmarkDfsWalk(b *testing.B) {
+// func BenchmarkTreeWalk(b *testing.B) {
+// 	os.Stdout = nil
+
+// 	cwd, _ := os.Getwd()
+// 	p := filepath.Join(cwd, "..")
+// 	for n := 0; n < b.N; n++ {
+// 		dfs_walk(p, p)
+// 	}
+// }
+
+func BenchmarkTreeTk(b *testing.B) {
 	os.Stdout = nil
 
 	cwd, _ := os.Getwd()
 	p := filepath.Join(cwd, "..")
 	for n := 0; n < b.N; n++ {
-		dfs_walk(p, p)
+		dfs(p, p, map[string]string{})
 	}
 }
 
-func BenchmarkDfs(b *testing.B) {
+func BenchmarkTreeNextJs(b *testing.B) {
 	os.Stdout = nil
 
 	cwd, _ := os.Getwd()
-	p := filepath.Join(cwd, "..")
+	p := filepath.Join(cwd, "../../next.js")
 	for n := 0; n < b.N; n++ {
-		dfs(p, p)
+		dfs(p, p, map[string]string{})
 	}
 }
