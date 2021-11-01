@@ -11,14 +11,14 @@ class Tk < Formula
   on_macos do
     if Hardware::CPU.intel?
       url "https://github.com/thiskevinwang/tk/releases/download/v0.0.9/homebrew-go-example_0.0.9_Darwin_x86_64.tar.gz"
-      sha256 "b131d8c64389de8074ec310bc527ae1ff597de8d6f472b873ec03680227bfdeb"
+      sha256 "5c0cb55dfe8ec810a3be6eae8155e830e40c503d458bac0d8d117646714ef197"
     end
   end
 
   on_linux do
     if Hardware::CPU.intel?
       url "https://github.com/thiskevinwang/tk/releases/download/v0.0.9/homebrew-go-example_0.0.9_Linux_x86_64.tar.gz"
-      sha256 "821b644fa0eb5f7db83c5ebea6cd8e64c912c01757a166d730b1fe27c4572ff6"
+      sha256 "5e469f0a53600742271f7ebc4ebbe18d430270fb4f42db29158fb2427e9dcff1"
     end
   end
 
