@@ -97,7 +97,7 @@ func dfs(dir string, root string, cache map[string]string) (int, int) {
 			abs = path.Join(abs, part)
 
 			if cache[abs] != "" {
-				res += cache[abs]
+				res = cache[abs]
 			} else {
 				isLast := getIsLast(abs)
 
