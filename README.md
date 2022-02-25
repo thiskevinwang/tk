@@ -60,3 +60,16 @@ cat ~/.tk/config.yaml
 ## Benchmark
 
 `go test ./cmd -bench=.`
+
+# Release Process
+
+```bash
+export GITHUB_TOKEN=<...>
+# commit some changes
+git tag vX.X.X
+goreleaser release --rm-dist
+# a commit will be created, updating the `Formula`
+git pull
+brew tap thiskevinwang/tk https://github.com/thiskevinwang/tk.git
+brew install tk
+```
