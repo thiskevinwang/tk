@@ -5,24 +5,43 @@
 class Tk < Formula
   desc "Example binary distribution using homebrew."
   homepage "https://github.com/thiskevinwang/tk"
-  version "0.0.9"
-  bottle :unneeded
+  version "0.0.10"
 
   on_macos do
+    if Hardware::CPU.arm?
+      url "https://github.com/thiskevinwang/tk/releases/download/v0.0.10/tk_0.0.10_Darwin_arm64.tar.gz"
+      sha256 "01501c20e4650b6be769169a9816f5e5ee82749c9cfa64c84873c1e0749e623e"
+
+      def install
+        bin.install "tk"
+      end
+    end
     if Hardware::CPU.intel?
-      url "https://github.com/thiskevinwang/tk/releases/download/v0.0.9/homebrew-go-example_0.0.9_Darwin_x86_64.tar.gz"
-      sha256 "5c0cb55dfe8ec810a3be6eae8155e830e40c503d458bac0d8d117646714ef197"
+      url "https://github.com/thiskevinwang/tk/releases/download/v0.0.10/tk_0.0.10_Darwin_x86_64.tar.gz"
+      sha256 "6e3ee0cf3b7d3391873447b2765c32722f254d5e37acf3045d5883bf4589a5f7"
+
+      def install
+        bin.install "tk"
+      end
     end
   end
 
   on_linux do
-    if Hardware::CPU.intel?
-      url "https://github.com/thiskevinwang/tk/releases/download/v0.0.9/homebrew-go-example_0.0.9_Linux_x86_64.tar.gz"
-      sha256 "5e469f0a53600742271f7ebc4ebbe18d430270fb4f42db29158fb2427e9dcff1"
-    end
-  end
+    if Hardware::CPU.arm? && Hardware::CPU.is_64_bit?
+      url "https://github.com/thiskevinwang/tk/releases/download/v0.0.10/tk_0.0.10_Linux_arm64.tar.gz"
+      sha256 "771ad4acc12d1b1635f159343649b841e7a8a06f52e0d2da4642d30425dc39d9"
 
-  def install
-    bin.install "tk"
+      def install
+        bin.install "tk"
+      end
+    end
+    if Hardware::CPU.intel?
+      url "https://github.com/thiskevinwang/tk/releases/download/v0.0.10/tk_0.0.10_Linux_x86_64.tar.gz"
+      sha256 "e823083b8e9ffbdfe3364c33254fce82ecea96d096bd401e4b3daa66ec72b59d"
+
+      def install
+        bin.install "tk"
+      end
+    end
   end
 end
