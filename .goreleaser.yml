@@ -1,4 +1,4 @@
-# This is an example .goreleaser.yml file with some sane defaults.
+# This is an example .goreleaser.yml file with some sensible defaults.
 # Make sure to check the documentation at https://goreleaser.com
 before:
   hooks:
@@ -15,35 +15,23 @@ builds:
       - GITHUB_TOKEN={{ .Env.GITHUB_TOKEN }}
     goos:
       - linux
+      - windows
       - darwin
-    goarch:
-      - amd64
-    ignore:
-      - goos: darwin
-        goarch: 386
-      - goos: linux
-        goarch: arm
-        goarm: 7
-      - goarm: mips64
-        gomips: hardfloat
-
-# Check https://goreleaser.com/customization/archive/
 archives:
-  - name_template: "homebrew-go-example_{{ .Version }}_{{ .Os }}_{{ .Arch }}"  
-    replacements:
+  - replacements:
       darwin: Darwin
       linux: Linux
       windows: Windows
       386: i386
       amd64: x86_64
 
-# 
+#
 project_name: tk
 
 # Check https://goreleaser.com/customization/homebrew/
 brews:
-  - homepage: 'https://github.com/thiskevinwang/tk'
-    description: 'Example binary distribution using homebrew.'
+  - homepage: "https://github.com/thiskevinwang/tk"
+    description: "Example binary distribution using homebrew."
     folder: Formula
     commit_author:
       name: kevinwang
@@ -53,7 +41,7 @@ brews:
       name: tk
 
 checksum:
-  name_template: 'checksums.txt'
+  name_template: "checksums.txt"
 
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
@@ -62,5 +50,5 @@ changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
+      - "^docs:"
+      - "^test:"
